@@ -4,8 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Commenting out base path for local development
-  // base: '/secure-code-reviewer/',
+  base: '/code-reviewer/',
   build: {
     outDir: 'dist'
   },
