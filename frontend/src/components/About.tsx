@@ -54,7 +54,7 @@ const About: React.FC<AboutProps> = ({ activeSection }) => {
           maxWidth: '900px',
           margin: '0 auto',
           padding: '60px 40px',
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 254, 0.95)',
           borderRadius: '20px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
           backdropFilter: 'blur(10px)',
