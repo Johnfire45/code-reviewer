@@ -52,6 +52,8 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const CodeReviewer: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [code, setCode] = useState('');
@@ -111,53 +113,19 @@ const CodeReviewer: React.FC = () => {
     setAnalysisResults(null);
 
     try {
-      // TODO: Replace with actual API call
-      // Simulating API call for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock analysis results
-      const mockResults = {
-        summary: {
-          totalIssues: 3,
-          critical: 1,
-          high: 1,
-          medium: 1,
-          low: 0,
-        },
-        issues: [
-          {
-            id: 1,
-            severity: 'critical',
-            type: 'SQL Injection',
-            line: 15,
-            description: 'Potential SQL injection vulnerability detected',
-            recommendation: 'Use parameterized queries or prepared statements',
-            code: 'SELECT * FROM users WHERE id = " + userId',
-          },
-          {
-            id: 2,
-            severity: 'high',
-            type: 'XSS',
-            line: 23,
-            description: 'Potential Cross-Site Scripting vulnerability',
-            recommendation: 'Sanitize user input before rendering',
-            code: 'innerHTML = userInput',
-          },
-          {
-            id: 3,
-            severity: 'medium',
-            type: 'Weak Encryption',
-            line: 8,
-            description: 'Using deprecated encryption method',
-            recommendation: 'Use AES-256 or other modern encryption standards',
-            code: 'crypto.createCipher("des", key)',
-          },
-        ],
-      };
-
-      setAnalysisResults(mockResults);
-    } catch (err) {
-      setError('Failed to analyze code. Please try again.');
+      const response = await fetch(`${API_URL}/api/code-review/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, language }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to analyze code');
+      }
+      const data = await response.json();
+      setAnalysisResults(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to analyze code. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
