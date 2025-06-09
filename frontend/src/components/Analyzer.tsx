@@ -5,22 +5,36 @@ interface AnalyzerProps {
   activeSection: SectionId;
 }
 
+const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001';
+
 const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
   const [code, setCode] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!code.trim()) {
       alert('Please enter some code to analyze!');
       return;
     }
-    
     setIsAnalyzing(true);
-    // Simulate analysis
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_URL}/api/code-review/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, language: 'javascript' }), // or allow user to select language
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to analyze code');
+      }
+      const data = await response.json();
+      // Display results (replace alert with UI update as needed)
+      alert('Analysis Complete!\n' + JSON.stringify(data, null, 2));
+    } catch (err: any) {
+      alert(err.message || 'Failed to analyze code. Please try again.');
+    } finally {
       setIsAnalyzing(false);
-      alert('🔍 Analysis Complete!\n\n✅ Found 3 potential security issues:\n• SQL Injection vulnerability\n• Missing input validation\n• Weak password handling\n\n(This is a demo - real analysis coming soon!)');
-    }, 2000);
+    }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,11 +249,7 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="// Paste your code here for security analysis...
-function login(username, password) {
-  const query = 'SELECT * FROM users WHERE username = ' + username;
-  // This is vulnerable to SQL injection!
-}"
+              placeholder="// Paste your code here for security analysis...\nfunction login(username, password) {\n  const query = 'SELECT * FROM users WHERE username = ' + username;\n  // This is vulnerable to SQL injection!\n}"
               style={{
                 width: '100%',
                 height: '350px',
@@ -253,7 +263,9 @@ function login(username, password) {
                 outline: 'none',
                 transition: 'all 0.3s ease',
                 background: '#f8fafc',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                color: '#222',
+                fontWeight: 500,
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#667eea';

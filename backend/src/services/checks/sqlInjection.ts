@@ -1,99 +1,65 @@
-import { VulnerabilityCheck, VulnerabilityCheckResult } from '../../types/vulnerability';
+import { VulnerabilityCheck } from '../../types/vulnerability';
 
-// Common SQL injection patterns
-const SQL_INJECTION_PATTERNS = {
+const SQL_KEYWORDS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE'];
+
+const SIMPLE_PATTERNS = {
   javascript: [
-    {
-      pattern: /`\s*SELECT.*\${[^}]+}.*`/g,
-      description: 'Template literal in SQL query'
-    },
-    {
-      pattern: /['"`]\s*\+\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*\+?\s*['"`]/g,
-      description: 'String concatenation in SQL query'
-    },
-    {
-      pattern: /execute\s*\(\s*['"`]\s*SELECT/i,
-      description: 'Dynamic SQL execution'
-    },
-    {
-      pattern: /query\s*\(\s*['"`]\s*SELECT/i,
-      description: 'Dynamic SQL query'
-    }
+    // Template literals with variable interpolation and SQL keywords
+    /`[^`]*\b(SELECT|INSERT|UPDATE|DELETE)\b[^`]*\${[^}]+}[^`]*`/i,
+    // String concatenation with SQL keywords
+    /(['"`][^'"`]*\b(SELECT|INSERT|UPDATE|DELETE)\b[^'"`]*['"`]\s*\+\s*\w+)/i
   ],
   python: [
-    {
-      pattern: /['"]\s*\+\s*[a-zA-Z_][a-zA-Z0-9_]*\s*\+?\s*['"]/g,
-      description: 'String concatenation in SQL query'
-    },
-    {
-      pattern: /execute\s*\(\s*['"]\s*SELECT/i,
-      description: 'Dynamic SQL execution'
-    },
-    {
-      pattern: /raw\s*\(\s*['"]\s*SELECT/i,
-      description: 'Raw SQL query'
-    }
+    // f-strings with SQL keywords
+    /f['"][^'"]*\b(SELECT|INSERT|UPDATE|DELETE)\b[^'"]*\{[^}]+\}[^'"]*['"]/i,
+    // String concatenation with SQL keywords
+    /(['"][^'"]*\b(SELECT|INSERT|UPDATE|DELETE)\b[^'"]*['"]\s*\+\s*\w+)/i
   ],
   java: [
-    {
-      pattern: /['"]\s*\+\s*[a-zA-Z_][a-zA-Z0-9_]*\s*\+?\s*['"]/g,
-      description: 'String concatenation in SQL query'
-    },
-    {
-      pattern: /createStatement\s*\(\s*\)\s*\.\s*execute\s*\(\s*['"]\s*SELECT/i,
-      description: 'Dynamic SQL execution'
-    },
-    {
-      pattern: /executeQuery\s*\(\s*['"]\s*SELECT/i,
-      description: 'Dynamic SQL query'
-    }
+    // String concatenation with SQL keywords
+    /(['"][^'"]*\b(SELECT|INSERT|UPDATE|DELETE)\b[^'"]*['"]\s*\+\s*\w+)/i
   ]
 };
 
 export async function checkSQLInjection(code: string, language: string): Promise<VulnerabilityCheck | null> {
-  const patterns = SQL_INJECTION_PATTERNS[language as keyof typeof SQL_INJECTION_PATTERNS];
-  
-  if (!patterns) {
-    return null; // Language not supported
-  }
+  const patterns = SIMPLE_PATTERNS[language as keyof typeof SIMPLE_PATTERNS];
+  if (!patterns) return null;
 
   const locations = [];
-  let lineNumber = 1;
-  let column = 0;
-
-  // Split code into lines for better location tracking
   const lines = code.split('\n');
+  let lineNumber = 1;
 
   for (const line of lines) {
-    for (const { pattern, description } of patterns) {
-      let match;
-      while ((match = pattern.exec(line)) !== null) {
+    // Only check lines that contain a SQL keyword
+    if (!SQL_KEYWORDS.some(keyword => line.toUpperCase().includes(keyword))) {
+      lineNumber++;
+      continue;
+    }
+    for (const pattern of patterns) {
+      const match = pattern.exec(line);
+      if (match) {
         locations.push({
           line: lineNumber,
           column: match.index + 1,
           length: match[0].length,
           snippet: line.trim()
         });
+        break; // Only record the first match per line for simplicity
       }
     }
     lineNumber++;
   }
 
-  if (locations.length === 0) {
-    return null;
-  }
+  if (locations.length === 0) return null;
 
   return {
     id: 'sql-injection',
     name: 'SQL Injection Vulnerability',
-    description: 'Potential SQL injection vulnerability detected. The code appears to be constructing SQL queries using string concatenation or executing dynamic SQL, which could allow attackers to manipulate the query.',
+    description: 'Potential SQL injection vulnerability detected. The code appears to be constructing SQL queries using string concatenation or variable interpolation.',
     severity: 'critical',
     category: 'Injection',
     locations,
-    recommendation: 'Use parameterized queries or prepared statements instead of string concatenation. For example:\n' +
-      '- JavaScript: Use ? placeholders with mysql2 or pg\n' +
-      '- Python: Use parameterized queries with SQLAlchemy or psycopg2\n' +
-      '- Java: Use PreparedStatement with ? placeholders',
+    recommendation: 'Use parameterized queries or prepared statements instead of string concatenation or variable interpolation.',
     cweId: 'CWE-89',
     owaspCategory: 'A1:2021 – Broken Access Control'
   };
