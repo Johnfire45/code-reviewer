@@ -1,0 +1,32 @@
+{
+  "name": "secure-code-reviewer-backend",
+  "version": "0.0.1",
+  "description": "Backend for secure code review (using OWASP Top 10 and additional checks) with PDF report generation.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "pdfkit": "^0.14.0 (or use puppeteer if preferred)"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.23",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.15.30",
+    "@types/pdfkit": "^0.13.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitest": "^0.34.6 (or latest)"
+  }
+}
