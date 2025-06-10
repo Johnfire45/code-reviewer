@@ -4,73 +4,118 @@ const API_URL = 'http://localhost:3001';
 
 describe('SQL Injection Detection API', () => {
   const testCases = [
-    // JavaScript - Positive
+    // JavaScript - Positive Cases
     {
       code: 'const query = `SELECT * FROM users WHERE id = ${userId}`;',
       language: 'javascript',
       shouldDetect: true,
-      description: 'JS: Template literal with SQL keyword and variable',
+      description: 'JS: Template literal with SQL keyword and variable (detected)',
     },
     {
       code: 'const query = "SELECT * FROM users WHERE id = " + userId;',
       language: 'javascript',
       shouldDetect: true,
-      description: 'JS: String concatenation with SQL keyword',
+      description: 'JS: String concatenation with SQL keyword (detected)',
     },
-    // JavaScript - Negative
+    {
+      code: `const sql = \`INSERT INTO logs (message) VALUES ('\${logMessage}')\`;`,
+      language: 'javascript',
+      shouldDetect: true,
+      description: 'JS: Insert statement with template literal and variable (detected)',
+    },
+    // JavaScript - Negative Cases
     {
       code: 'const query = "SELECT * FROM users WHERE id = ?";',
       language: 'javascript',
       shouldDetect: false,
       description: 'JS: Parameterized query (safe)',
     },
-    // Python - Positive
+    {
+      code: 'const message = `Hello, ${userName}!`;',
+      language: 'javascript',
+      shouldDetect: false,
+      description: 'JS: Template literal with no SQL keyword (safe)',
+    },
+    {
+      code: 'const query = "SELECT * FROM users WHERE id = 1";',
+      language: 'javascript',
+      shouldDetect: false,
+      description: 'JS: SQL keyword but no variable (safe)',
+    },
+
+    // Python - Positive Cases
     {
       code: 'query = f"SELECT * FROM users WHERE id = {user_id}"',
       language: 'python',
       shouldDetect: true,
-      description: 'Python: f-string with SQL keyword and variable',
+      description: 'Python: f-string with SQL keyword and variable (detected)',
     },
     {
       code: 'query = "SELECT * FROM users WHERE id = " + user_id',
       language: 'python',
       shouldDetect: true,
-      description: 'Python: String concatenation with SQL keyword',
+      description: 'Python: String concatenation with SQL keyword (detected)',
     },
-    // Python - Negative
     {
-      code: 'query = "SELECT * FROM users WHERE id = %s" % user_id',
+      code: 'query = "UPDATE products SET price = %s WHERE id = %s" % (new_price, product_id)',
+      language: 'python',
+      shouldDetect: true,
+      description: 'Python: % operator with SQL keyword and variable (detected)',
+    },
+    // Python - Negative Cases
+    {
+      code: 'query = "SELECT * FROM users WHERE id = %s", (user_id,)',
       language: 'python',
       shouldDetect: false,
       description: 'Python: Parameterized query (safe)',
     },
-    // Java - Positive
+
+    // Java - Positive Cases
     {
       code: 'String query = "SELECT * FROM users WHERE id = " + userId;',
       language: 'java',
       shouldDetect: true,
-      description: 'Java: String concatenation with SQL keyword',
+      description: 'Java: String concatenation with SQL keyword (detected)',
     },
-    // Java - Negative
+    {
+      code: 'String sql = String.format("DELETE FROM logs WHERE id = %d", logId);',
+      language: 'java',
+      shouldDetect: true,
+      description: 'Java: String.format with SQL keyword and variable (detected)',
+    },
+    // Java - Negative Cases
     {
       code: 'String query = "SELECT * FROM users WHERE id = ?";',
       language: 'java',
       shouldDetect: false,
       description: 'Java: Parameterized query (safe)',
     },
-    // Edge case - No SQL
+
+    // PHP - Positive Cases
     {
-      code: 'const message = `Hello, ${userName}!`;',
-      language: 'javascript',
-      shouldDetect: false,
-      description: 'JS: Template literal with no SQL keyword',
+      code: '$query = "SELECT * FROM users WHERE id = " . $userId;',
+      language: 'php',
+      shouldDetect: true,
+      description: 'PHP: String concatenation with SQL keyword and variable (detected)',
     },
-    // Edge case - SQL keyword but no variable
     {
-      code: 'const query = "SELECT * FROM users WHERE id = 1";',
-      language: 'javascript',
+      code: '$query = "SELECT * FROM users WHERE id = {$userId}";',
+      language: 'php',
+      shouldDetect: true,
+      description: 'PHP: String interpolation with SQL keyword and variable (detected)',
+    },
+    {
+      code: '$sql = "UPDATE products SET stock = $newStock WHERE id = $productId";',
+      language: 'php',
+      shouldDetect: true,
+      description: 'PHP: Double-quoted string interpolation with SQL keyword (detected)',
+    },
+    // PHP - Negative Cases
+    {
+      code: '$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");',
+      language: 'php',
       shouldDetect: false,
-      description: 'JS: SQL keyword but no variable',
+      description: 'PHP: Prepared statement (safe)',
     },
   ];
 
@@ -80,6 +125,7 @@ describe('SQL Injection Detection API', () => {
         .post('/api/code-review/analyze')
         .send({ code, language })
         .set('Accept', 'application/json');
+
       if (shouldDetect) {
         expect(res.body.vulnerabilities.length).toBeGreaterThan(0);
         expect(res.body.vulnerabilities[0].id).toBe('sql-injection');

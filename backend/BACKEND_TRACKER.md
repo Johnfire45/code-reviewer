@@ -8,7 +8,7 @@
 - [x] PDF report generation (reportGenerator.ts)
 
 ## Vulnerability Check Modules
-- [x] SQL Injection (sqlInjection.ts)
+- [x] SQL Injection (sqlInjection.ts) - JS/Python/Java regex improved; PHP patterns need further refinement
 - [ ] XSS (Cross-Site Scripting)
 - [ ] CSRF (Cross-Site Request Forgery)
 - [ ] Insecure Deserialization
@@ -24,7 +24,7 @@
 - [ ] Rate limiting
 - [ ] Input validation
 - [ ] Request logging
-- [ ] CORS configuration
+- [ ] CORS configuration (updated for frontend integration)
 - [ ] Security headers
 
 ## Performance Features
@@ -41,7 +41,8 @@
 - [ ] Multiple export formats
 
 ## Testing
-- [ ] Unit tests
+- [x] SQL injection API integration test (sqlInjectionApi.test.ts) - JS/Python/Java cases passing, PHP cases failing
+- [ ] Unit tests (other modules)
 - [ ] Integration tests
 - [ ] Performance tests
 - [ ] Security tests
@@ -65,7 +66,7 @@ backend/
 │   │   ├── codeAnalysis.ts        # Analysis coordinator (✅)
 │   │   ├── reportGenerator.ts     # PDF report generation (✅)
 │   │   └── checks/                # Vulnerability check modules
-│   │       ├── sqlInjection.ts    # SQL injection check (✅)
+│   │       ├── sqlInjection.ts    # SQL injection check (✅, improved, PHP needs work)
 │   │       ├── xss.ts             # (⏳)
 │   │       ├── csrf.ts            # (⏳)
 │   │       ├── insecureDeserialization.ts  # (⏳)
@@ -101,6 +102,6 @@ Legend:
 ```
 
 ## Last Updated
-- Date: [Current Date]
-- Status: Basic structure implemented with SQL Injection check
-- Next Steps: Implement remaining vulnerability checks and add testing 
+- Date: 2024-12-19
+- Status: SQL injection detection logic improved, backend and test integration confirmed. PHP patterns require further refinement.
+- Next Steps: Improve PHP SQL injection patterns, implement remaining vulnerability checks, add rate limiting, and improve frontend integration 
