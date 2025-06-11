@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { SectionId } from './types';
+import { detectLanguageFromContent, detectLanguageFromFileName } from '../utils/languageDetector';
 
 interface AnalyzerProps {
   activeSection: SectionId;
@@ -10,6 +11,9 @@ const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
 const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
   const [code, setCode] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [language, setLanguage] = useState('javascript');
+  const [results, setResults] = useState<any>(null);
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -17,19 +21,40 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
       return;
     }
     setIsAnalyzing(true);
+    setResults(null);
     try {
       const response = await fetch(`${API_URL}/api/code-review/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language: 'javascript' }), // or allow user to select language
+        body: JSON.stringify({ code, language }),
       });
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || 'Failed to analyze code');
       }
       const data = await response.json();
-      // Display results (replace alert with UI update as needed)
-      alert('Analysis Complete!\n' + JSON.stringify(data, null, 2));
+      
+      // Transform API response to match expected frontend format
+      const transformedData = {
+        summary: {
+          totalIssues: data.summary.totalIssues,
+          critical: data.summary.criticalIssues,
+          high: data.summary.highIssues,
+          medium: data.summary.mediumIssues,
+          low: data.summary.lowIssues
+        },
+        issues: data.vulnerabilities.map((vuln: any, index: number) => ({
+          id: index + 1,
+          severity: vuln.severity,
+          type: vuln.name || vuln.id,
+          line: vuln.locations?.[0]?.line || 0,
+          description: vuln.description,
+          recommendation: vuln.recommendation,
+          code: vuln.locations?.[0]?.snippet || ''
+        }))
+      };
+      
+      setResults(transformedData);
     } catch (err: any) {
       alert(err.message || 'Failed to analyze code. Please try again.');
     } finally {
@@ -44,8 +69,26 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         setCode(content);
+        
+        // Detect language from file extension and content
+        const detectedLang = detectLanguageFromFileName(file.name);
+        setLanguage(detectedLang);
+        setDetectedLanguage(detectedLang);
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newCode = e.target.value;
+    setCode(newCode);
+    
+    // Only detect language if we have enough code to analyze (at least 20 chars)
+    if (newCode && newCode.trim().length > 20) {
+      const detectedLang = detectLanguageFromContent(newCode);
+      setDetectedLanguage(detectedLang);
+      // Auto-select the detected language
+      setLanguage(detectedLang);
     }
   };
 
@@ -248,7 +291,7 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
             </label>
             <textarea
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={handleCodeChange}
               placeholder="// Paste your code here for security analysis...\nfunction login(username, password) {\n  const query = 'SELECT * FROM users WHERE username = ' + username;\n  // This is vulnerable to SQL injection!\n}"
               style={{
                 width: '100%',
@@ -278,6 +321,37 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
                 e.target.style.transform = 'scale(1)';
               }}
             />
+          </div>
+
+          {/* Language Selector */}
+          <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+            <label htmlFor="language-select" style={{ fontWeight: 600, marginRight: 10 }}>Language:</label>
+            <select
+              id="language-select"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{ padding: '8px 16px', borderRadius: 6, border: '1px solid #ccc', fontSize: 16 }}
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="php">PHP</option>
+              <option value="java">Java</option>
+              <option value="typescript">TypeScript</option>
+              <option value="cpp">C++</option>
+              <option value="c">C</option>
+              <option value="ruby">Ruby</option>
+              <option value="go">Go</option>
+            </select>
+            {detectedLanguage && (
+              <div style={{ 
+                marginTop: 5, 
+                fontSize: 12, 
+                color: '#666', 
+                fontStyle: 'italic'
+              }}>
+                Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
+              </div>
+            )}
           </div>
 
           {/* Analyze Button */}
@@ -339,6 +413,14 @@ const Analyzer: React.FC<AnalyzerProps> = ({ activeSection }) => {
               )}
             </button>
           </div>
+
+          {/* Results Display */}
+          {results && (
+            <div style={{ marginTop: 30, background: '#f4f6fa', borderRadius: 12, padding: 24 }}>
+              <h3 style={{ color: '#2d3748', marginBottom: 10 }}>Analysis Results</h3>
+              <pre style={{ background: '#fff', borderRadius: 8, padding: 16, fontSize: 15, overflowX: 'auto' }}>{JSON.stringify(results, null, 2)}</pre>
+            </div>
+          )}
         </div>
       </div>
     </div>

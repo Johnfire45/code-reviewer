@@ -8,7 +8,7 @@
 - [x] PDF report generation (reportGenerator.ts)
 
 ## Vulnerability Check Modules
-- [x] SQL Injection (sqlInjection.ts) - JS/Python/Java regex improved; PHP patterns need further refinement
+- [x] SQL Injection (sqlInjection.ts) - JS/Python/Java/PHP regex improved and confirmed working
 - [ ] XSS (Cross-Site Scripting)
 - [ ] CSRF (Cross-Site Request Forgery)
 - [ ] Insecure Deserialization
@@ -24,7 +24,7 @@
 - [ ] Rate limiting
 - [ ] Input validation
 - [ ] Request logging
-- [ ] CORS configuration (updated for frontend integration)
+- [x] CORS configuration (updated for frontend integration)
 - [ ] Security headers
 
 ## Performance Features
@@ -41,7 +41,7 @@
 - [ ] Multiple export formats
 
 ## Testing
-- [x] SQL injection API integration test (sqlInjectionApi.test.ts) - JS/Python/Java cases passing, PHP cases failing
+- [x] SQL injection API integration test (sqlInjectionApi.test.ts) - JS/Python/Java/PHP cases passing
 - [ ] Unit tests (other modules)
 - [ ] Integration tests
 - [ ] Performance tests
@@ -66,7 +66,7 @@ backend/
 │   │   ├── codeAnalysis.ts        # Analysis coordinator (✅)
 │   │   ├── reportGenerator.ts     # PDF report generation (✅)
 │   │   └── checks/                # Vulnerability check modules
-│   │       ├── sqlInjection.ts    # SQL injection check (✅, improved, PHP needs work)
+│   │       ├── sqlInjection.ts    # SQL injection check (✅, improved, PHP now working)
 │   │       ├── xss.ts             # (⏳)
 │   │       ├── csrf.ts            # (⏳)
 │   │       ├── insecureDeserialization.ts  # (⏳)
@@ -103,5 +103,5 @@ Legend:
 
 ## Last Updated
 - Date: 2024-12-19
-- Status: SQL injection detection logic improved, backend and test integration confirmed. PHP patterns require further refinement.
+- Status: Frontend-backend integration complete. Automatic language detection implemented in frontend. SQL injection detection confirmed for JS, Python, Java, and PHP. Frontend transforms backend responses for display. Next: deployment and more vulnerability modules.
 - Next Steps: Improve PHP SQL injection patterns, implement remaining vulnerability checks, add rate limiting, and improve frontend integration 

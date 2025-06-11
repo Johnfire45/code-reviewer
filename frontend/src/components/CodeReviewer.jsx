@@ -19,10 +19,11 @@ import {
   Chip,
   Divider
 } from '@mui/material';
+import { detectLanguageFromContent, detectLanguageFromFileName } from '../utils/languageDetector';
 
 const API_URL = import.meta.env.DEV
-  ? 'http://localhost:3000/api/analyze'
-  : 'https://secure-code-reviewer-api.onrender.com/api/analyze';
+  ? 'http://localhost:3001/api/code-review/analyze'
+  : 'https://secure-code-reviewer-api.onrender.com/api/code-review/analyze';
 
 const CodeReviewer = () => {
   const [code, setCode] = useState('');
@@ -30,6 +31,37 @@ const CodeReviewer = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [detectedLanguage, setDetectedLanguage] = useState(null);
+
+  const handleCodeChange = (e) => {
+    const newCode = e.target.value;
+    setCode(newCode);
+    
+    // Only detect language if we have enough code to analyze
+    if (newCode && newCode.trim().length > 20) {
+      const detectedLang = detectLanguageFromContent(newCode);
+      setDetectedLanguage(detectedLang);
+      // Auto-select the detected language
+      setLanguage(detectedLang);
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        setCode(content);
+        
+        // Detect language from file name
+        const detectedLang = detectLanguageFromFileName(file.name);
+        setLanguage(detectedLang);
+        setDetectedLanguage(detectedLang);
+      };
+      reader.readAsText(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,14 +83,45 @@ const CodeReviewer = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to analyze code');
       }
+      
+      // Transform API response to match expected frontend format
+      const transformedData = {
+        codeQuality: calculateCodeQuality(data.summary),
+        summary: {
+          severity: {
+            high: data.summary.criticalIssues + data.summary.highIssues,
+            medium: data.summary.mediumIssues,
+            low: data.summary.lowIssues,
+          }
+        },
+        issues: data.vulnerabilities.map((vuln, index) => ({
+          id: index + 1,
+          severity: vuln.severity,
+          type: vuln.name || vuln.id,
+          line: vuln.locations?.[0]?.line || 0,
+          description: vuln.description,
+          recommendation: vuln.recommendation,
+          code: vuln.locations?.[0]?.snippet || ''
+        }))
+      };
 
-      setResults(data);
+      setResults(transformedData);
     } catch (err) {
       console.error('Error analyzing code:', err);
       setError(err.message || 'An error occurred while analyzing the code');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Calculate code quality score based on vulnerability summary
+  const calculateCodeQuality = (summary) => {
+    const criticalPenalty = summary.criticalIssues * 30;
+    const highPenalty = summary.highIssues * 20;
+    const mediumPenalty = summary.mediumIssues * 10;
+    const lowPenalty = summary.lowIssues * 5;
+    
+    return Math.max(0, 100 - criticalPenalty - highPenalty - mediumPenalty - lowPenalty);
   };
 
   const getSeverityColor = (severity) => {
@@ -106,20 +169,51 @@ const CodeReviewer = () => {
                       <MenuItem value="javascript">JavaScript</MenuItem>
                       <MenuItem value="python">Python</MenuItem>
                       <MenuItem value="php">PHP</MenuItem>
+                      <MenuItem value="typescript">TypeScript</MenuItem>
+                      <MenuItem value="java">Java</MenuItem>
+                      <MenuItem value="cpp">C++</MenuItem>
+                      <MenuItem value="c">C</MenuItem>
+                      <MenuItem value="ruby">Ruby</MenuItem>
+                      <MenuItem value="go">Go</MenuItem>
                     </Select>
+                    {detectedLanguage && (
+                      <Typography variant="caption" style={{ marginTop: 4, display: 'block', color: '#666' }}>
+                        Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
+                      </Typography>
+                    )}
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    label="Enter code to analyze"
-                    multiline
-                    rows={10}
-                    variant="outlined"
-                    fullWidth
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder={`// Enter your ${language} code here for security analysis`}
-                  />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <TextField
+                      label="Enter code to analyze"
+                      multiline
+                      rows={10}
+                      variant="outlined"
+                      fullWidth
+                      value={code}
+                      onChange={handleCodeChange}
+                      placeholder={`// Enter your code here for security analysis`}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button
+                        component="label"
+                        variant="outlined"
+                        startIcon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M4.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-7zM8 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                          <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0-4 2 2 0 0 0 0 4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                        </svg>}
+                      >
+                        Upload File
+                        <input 
+                          type="file"
+                          accept=".js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.php,.rb,.go"
+                          hidden
+                          onChange={handleFileUpload}
+                        />
+                      </Button>
+                    </Box>
+                  </Box>
                 </Grid>
                 <Grid item xs={12}>
                   <Button
@@ -204,23 +298,23 @@ const CodeReviewer = () => {
                   <Typography variant="subtitle1" gutterBottom>
                     Detected Vulnerabilities:
                   </Typography>
-                  {results.vulnerabilities.length === 0 ? (
+                  {results.issues.length === 0 ? (
                     <Alert severity="success">No vulnerabilities detected!</Alert>
                   ) : (
                     <List>
-                      {results.vulnerabilities.map((vuln, index) => (
-                        <ListItem key={index} divider={index < results.vulnerabilities.length - 1}>
+                      {results.issues.map((issue, index) => (
+                        <ListItem key={index} divider={index < results.issues.length - 1}>
                           <ListItemText
                             primary={
                               <Box display="flex" alignItems="center">
                                 <Typography variant="subtitle1" style={{ marginRight: '10px' }}>
-                                  {vuln.name}
+                                  {issue.type}
                                 </Typography>
                                 <Chip 
                                   size="small" 
-                                  label={vuln.severity} 
+                                  label={issue.severity} 
                                   style={{ 
-                                    backgroundColor: getSeverityColor(vuln.severity),
+                                    backgroundColor: getSeverityColor(issue.severity),
                                     color: 'white'
                                   }}
                                 />
@@ -229,11 +323,23 @@ const CodeReviewer = () => {
                             secondary={
                               <>
                                 <Typography variant="body2" color="textPrimary">
-                                  {vuln.description}
+                                  {issue.description}
                                 </Typography>
                                 <Typography variant="body2">
-                                  Found {vuln.count} occurrence(s) on line(s): {vuln.lineNumbers.join(', ')}
+                                  {issue.line > 0 ? `Found on line: ${issue.line}` : 'Code-level issue'}
                                 </Typography>
+                                {issue.code && (
+                                  <Box mt={1} p={1} bgcolor="rgba(0,0,0,0.04)" borderRadius={1}>
+                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}>
+                                      {issue.code}
+                                    </pre>
+                                  </Box>
+                                )}
+                                {issue.recommendation && (
+                                  <Typography variant="body2" color="textSecondary" style={{ marginTop: '8px' }}>
+                                    <strong>Recommendation:</strong> {issue.recommendation}
+                                  </Typography>
+                                )}
                               </>
                             }
                           />
