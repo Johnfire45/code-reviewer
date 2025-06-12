@@ -33,4 +33,4 @@ export interface AboutItem {
   link: string;
 }
 
-export type SectionId = 'home' | 'analyzer' | 'features' | 'about'; 
+export type SectionId = 'home' | 'analyzer' | 'features' | 'about' | 'results'; 

@@ -8,7 +8,7 @@ interface SQLPattern {
 const patterns: Record<string, SQLPattern[]> = {
   javascript: [
     {
-      pattern: /`[^`]*(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE)[^`]*\$\{[^}]+\}[^`]*`/gi,
+      pattern: /`[^`]*(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE|ALTER|TRUNCATE|DROP)[^`]*\$\{[^}]+\}[^`]*`/gi,
       description: 'Template literal with SQL keyword and variable interpolation'
     },
     {
@@ -16,13 +16,13 @@ const patterns: Record<string, SQLPattern[]> = {
       description: 'String concatenation in SQL query'
     },
     {
-      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE)[^;]*\+\s*\w+/gi,
+      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE|ALTER|TRUNCATE|DROP)[^;]*\+\s*\w+/gi,
       description: 'SQL keyword with string concatenation'
     }
   ],
   python: [
     {
-      pattern: /f["'][^"']*(SELECT|INSERT|UPDATE|DELETE)[^"']*{[^}]+}[^"']*["']/i,
+      pattern: /f["'][^"']*(SELECT|INSERT|UPDATE|DELETE|ALTER|TRUNCATE|DROP|EXECUTE IMMEDIATE)[^"']*{[^}]+}[^"']*["']/i,
       description: 'f-string with variable interpolation and SQL keyword'
     },
     {
@@ -30,12 +30,12 @@ const patterns: Record<string, SQLPattern[]> = {
       description: 'String concatenation in SQL query'
     },
     {
-      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE)[^;]*\+\s*\w+/gi,
+      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE|ALTER|TRUNCATE|DROP)[^;]*\+\s*\w+/gi,
       description: 'SQL keyword with string concatenation'
     },
     {
-      // NEW → detect % operator string formatting
-      pattern: /["'][^"']*(SELECT|INSERT|UPDATE|DELETE)[^"']*["']\s*%\s*\([^)]+\)/i,
+      // Updated to include ALTER, TRUNCATE, DROP keywords
+      pattern: /["'][^"']*(SELECT|INSERT|UPDATE|DELETE|ALTER|TRUNCATE|DROP)[^"']*["']\s*%\s*\([^)]+\)/i,
       description: '% operator string formatting with SQL keyword'
     }
   ],
@@ -45,12 +45,12 @@ const patterns: Record<string, SQLPattern[]> = {
       description: 'String concatenation in SQL query'
     },
     {
-      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE)[^;]*\+\s*\w+/gi,
+      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE|ALTER|TRUNCATE|DROP)[^;]*\+\s*\w+/gi,
       description: 'SQL keyword with string concatenation'
     },
     {
-      // NEW → detect String.format with SQL keyword
-      pattern: /String\.format\(\s*"(SELECT|INSERT|UPDATE|DELETE)[^"]*",\s*[^)]+\)/i,
+      // Updated to include TRUNCATE and other keywords
+      pattern: /String\.format\(\s*"[^"']*(SELECT|INSERT|UPDATE|DELETE|ALTER|TRUNCATE|DROP)[^"]*",\s*[^)]+\)/i,
       description: 'String.format with SQL keyword'
     }
   ],
@@ -60,17 +60,17 @@ const patterns: Record<string, SQLPattern[]> = {
       description: 'String concatenation in SQL query'
     },
     {
-      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE)[^;]*\.\s*\$\w+/gi,
+      pattern: /(SELECT|INSERT|UPDATE|DELETE|EXECUTE|EXEC|EXECUTE IMMEDIATE|ALTER|TRUNCATE|DROP)[^;]*\.\s*\$\w+/gi,
       description: 'SQL keyword with string concatenation'
     },
     {
-      // NEW → detect double-quoted string interpolation with {$var}
-      pattern: /"(SELECT|INSERT|UPDATE|DELETE)[^"]*\{\$\w+\}[^"]*"/i,
+      // Updated to include TRUNCATE and other keywords
+      pattern: /"[^"']*(SELECT|INSERT|UPDATE|DELETE|ALTER|TRUNCATE|DROP)[^"]*\{\$\w+\}[^"]*"/i,
       description: 'Double-quoted string interpolation with {$var} and SQL keyword'
     },
     {
-      // NEW → detect double-quoted string interpolation with $var
-      pattern: /"(SELECT|INSERT|UPDATE|DELETE)[^"]*\$\w+[^"]*"/i,
+      // Updated to include TRUNCATE and other keywords
+      pattern: /"[^"']*(SELECT|INSERT|UPDATE|DELETE|ALTER|TRUNCATE|DROP)[^"]*\$\w+[^"]*"/i,
       description: 'Double-quoted string interpolation with $var and SQL keyword'
     }
   ]

@@ -5,6 +5,7 @@ import Home from './components/Home';
 import Analyzer from './components/Analyzer';
 import Features from './components/Features';
 import About from './components/About';
+import ResultsPage from './components/ResultsPage';
 import type { Particle, SectionId } from './components/types';
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId>('home');
-  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
+  // Removed isHeaderVisible state - header is now always visible
 
   // Create floating particles effect
   useEffect(() => {
@@ -44,25 +45,11 @@ function App() {
     // Initial hash handling
     handleHashChange();
     
-    // Mouse tracking for header visibility
-    const handleMouseMove = (e: MouseEvent) => {
-      const mouseY = e.clientY;
-      const showHeaderZone = 100; // Show header when mouse is within 100px of top
-      
-      if (mouseY <= showHeaderZone) {
-        setIsHeaderVisible(true);
-      } else {
-        setIsHeaderVisible(false);
-      }
-    };
-
     window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener('mousemove', handleMouseMove);
     
     return () => {
       document.documentElement.style.scrollBehavior = 'auto';
       window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [activeSection]);
 
@@ -109,9 +96,8 @@ function App() {
       {/* Animated Background Particles */}
       <ParticleBackground particles={particles} />
 
-      {/* Header with navigation */}
+      {/* Header with navigation - Always visible */}
       <Header 
-        isHeaderVisible={isHeaderVisible} 
         activeSection={activeSection} 
         onSectionChange={scrollToSection} 
       />
@@ -123,7 +109,13 @@ function App() {
       />
       
       <Analyzer 
-        activeSection={activeSection} 
+        activeSection={activeSection}
+        onSectionChange={scrollToSection}
+      />
+
+      <ResultsPage 
+        activeSection={activeSection}
+        onSectionChange={scrollToSection}
       />
       
       <Features 
