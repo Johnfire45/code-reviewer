@@ -2,39 +2,22 @@ import detector from 'lang-detector';
 
 // Map of file extensions to language names
 export const extensionToLanguage: { [key: string]: string } = {
-  // JavaScript
   'js': 'javascript',
   'jsx': 'javascript',
-  
-  // TypeScript
   'ts': 'typescript',
   'tsx': 'typescript',
-  
-  // Python
   'py': 'python',
   'pyc': 'python',
   'pyw': 'python',
-  
-  // Java
   'java': 'java',
-  
-  // C/C++
   'c': 'c',
   'h': 'c',
   'cpp': 'cpp',
   'hpp': 'cpp',
   'cc': 'cpp',
-  
-  // PHP
   'php': 'php',
-  
-  // Ruby
   'rb': 'ruby',
-  
-  // Go
   'go': 'go',
-  
-  // Other languages
   'cs': 'csharp',
   'swift': 'swift',
   'kt': 'kotlin',
@@ -48,10 +31,8 @@ export const extensionToLanguage: { [key: string]: string } = {
   'yaml': 'yaml',
 };
 
-// Default language to use if detection fails
 export const DEFAULT_LANGUAGE = 'javascript';
 
-// Supported languages in our application
 export const supportedLanguages = [
   'javascript',
   'typescript',
@@ -61,13 +42,11 @@ export const supportedLanguages = [
   'c',
   'php',
   'ruby',
-  'go'
+  'go',
+  'sql'  // include SQL if supported
 ];
 
-// Performance: Pre-compile regex for better performance
 const SQL_KEYWORDS_REGEX = /\b(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|GRANT|REVOKE|TRUNCATE|EXEC|EXECUTE|MERGE|WITH|UNION|EXPLAIN|CALL|DESCRIBE|SHOW)\b/i;
-
-// Performance: Pre-compile TypeScript filename regex
 const TS_FILE_REGEX = /\.tsx?$/i;
 
 /**
@@ -81,18 +60,16 @@ export function detectLanguageFromContent(code: string, fileName?: string): stri
     console.log(`[LanguageDetector] Empty code → ${DEFAULT_LANGUAGE}`);
     return DEFAULT_LANGUAGE;
   }
-  
-  // Custom SQL detection logic (check first before lang-detector)
+
+  // SQL custom detection
   if (SQL_KEYWORDS_REGEX.test(code)) {
-    console.log(`[LanguageDetector] SQL detected → ${DEFAULT_LANGUAGE} (unsupported)`);
-    return DEFAULT_LANGUAGE;
+    console.log(`[LanguageDetector] SQL detected → sql`);
+    return 'sql';
   }
-  
+
   try {
-    // Use lang-detector to detect the language
     const detected = detector(code);
-    
-    // Map lang-detector's output to our standardized language names
+
     const detectorToStandard: { [key: string]: string } = {
       'JavaScript': 'javascript',
       'TypeScript': 'typescript',
@@ -100,33 +77,33 @@ export function detectLanguageFromContent(code: string, fileName?: string): stri
       'Java': 'java',
       'C++': 'cpp',
       'C': 'c',
+      'C#': 'csharp',
       'PHP': 'php',
       'Ruby': 'ruby',
       'Go': 'go',
+      'SQL': 'sql',
     };
-    
-    // Convert to standard name or use default
+
     const standardName = detectorToStandard[detected] || detected.toLowerCase();
-    
+
     console.log(`[LanguageDetector] ${detected} → ${standardName}`);
-    
-    // TypeScript override logic: if filename suggests TS but content detected as JS
+
+    // TS override logic
     if (fileName && TS_FILE_REGEX.test(fileName) && standardName === 'javascript') {
       console.log(`[LanguageDetector] TS override: ${fileName} → typescript`);
       return 'typescript';
     }
-    
-    // Only return if it's in our supported languages
+
     if (supportedLanguages.includes(standardName)) {
       return standardName;
     } else {
       console.warn(`[LanguageDetector] Unsupported: ${standardName} → ${DEFAULT_LANGUAGE}`);
+      return DEFAULT_LANGUAGE;
     }
   } catch (err) {
     console.warn('[LanguageDetector] Detection failed:', err);
+    return DEFAULT_LANGUAGE;
   }
-  
-  return DEFAULT_LANGUAGE;
 }
 
 /**
@@ -139,15 +116,15 @@ export function detectLanguageFromFileName(fileName: string): string {
     console.log('[LanguageDetector] Empty fileName → returning DEFAULT_LANGUAGE:', DEFAULT_LANGUAGE);
     return DEFAULT_LANGUAGE;
   }
-  
+
   const extension = fileName.split('.').pop()?.toLowerCase();
   if (!extension) {
     console.log('[LanguageDetector] Could not extract file extension → returning DEFAULT_LANGUAGE:', DEFAULT_LANGUAGE);
     return DEFAULT_LANGUAGE;
   }
-  
+
   const detectedLanguage = extensionToLanguage[extension] || DEFAULT_LANGUAGE;
   console.log(`[LanguageDetector] File extension ".${extension}" → detected language: "${detectedLanguage}"`);
-  
+
   return detectedLanguage;
 }

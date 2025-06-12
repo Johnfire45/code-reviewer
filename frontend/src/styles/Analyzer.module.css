@@ -226,6 +226,12 @@
 .languageSelector {
   margin-top: 20px;
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.languageRow {
+  display: flex;
   align-items: center;
   gap: 10px;
 }
@@ -254,10 +260,17 @@
 }
 
 .detectedLanguage {
-  margin-top: 8px;
   font-size: 12px;
   color: #666;
   font-style: italic;
+  margin-left: 10px;
+}
+
+.languageNote {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
 }
 
 .analyzeButtonContainer {

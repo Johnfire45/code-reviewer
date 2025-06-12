@@ -199,30 +199,35 @@ function login(username, password) {
 
                 {/* Language Selector */}
                 <div className={styles.languageSelector}>
-                  <label htmlFor="language-select" className={styles.languageLabel}>
-                    Language:
-                  </label>
-                  <select
-                    id="language-select"
-                    value={language}
-                    onChange={e => setLanguage(e.target.value)}
-                    className={styles.languageSelect}
-                  >
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="php">PHP</option>
-                    <option value="java">Java</option>
-                    <option value="typescript">TypeScript</option>
-                    <option value="cpp">C++</option>
-                    <option value="c">C</option>
-                    <option value="ruby">Ruby</option>
-                    <option value="go">Go</option>
-                  </select>
-                  {detectedLanguage && (
-                    <div className={styles.detectedLanguage}>
-                      Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
-                    </div>
-                  )}
+                  <div className={styles.languageRow}>
+                    <label htmlFor="language-select" className={styles.languageLabel}>
+                      Language:
+                    </label>
+                    <select
+                      id="language-select"
+                      value={language}
+                      onChange={e => setLanguage(e.target.value)}
+                      className={styles.languageSelect}
+                    >
+                      <option value="javascript">JavaScript</option>
+                      <option value="python">Python</option>
+                      <option value="php">PHP</option>
+                      <option value="java">Java</option>
+                      <option value="typescript">TypeScript</option>
+                      <option value="cpp">C++</option>
+                      <option value="c">C</option>
+                      <option value="ruby">Ruby</option>
+                      <option value="go">Go</option>
+                    </select>
+                    {detectedLanguage && (
+                      <span className={styles.detectedLanguage}>
+                        Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.languageNote}>
+                    ⚠️ Language detection is heuristic and may be inaccurate for short code snippets. Manually select the correct language if needed.
+                  </div>
                 </div>
               </div>
             </div>

@@ -158,30 +158,33 @@ const CodeReviewer = () => {
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined">
-                    <InputLabel id="language-select-label">Language</InputLabel>
-                    <Select
-                      labelId="language-select-label"
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      label="Language"
-                    >
-                      <MenuItem value="javascript">JavaScript</MenuItem>
-                      <MenuItem value="python">Python</MenuItem>
-                      <MenuItem value="php">PHP</MenuItem>
-                      <MenuItem value="typescript">TypeScript</MenuItem>
-                      <MenuItem value="java">Java</MenuItem>
-                      <MenuItem value="cpp">C++</MenuItem>
-                      <MenuItem value="c">C</MenuItem>
-                      <MenuItem value="ruby">Ruby</MenuItem>
-                      <MenuItem value="go">Go</MenuItem>
-                    </Select>
-                    {detectedLanguage && (
-                      <Typography variant="caption" style={{ marginTop: 4, display: 'block', color: '#666' }}>
-                        Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
-                      </Typography>
-                    )}
-                  </FormControl>
+                                <FormControl fullWidth variant="outlined">
+                <InputLabel id="language-select-label">Language</InputLabel>
+                <Select
+                  labelId="language-select-label"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  label="Language"
+                >
+                  <MenuItem value="javascript">JavaScript</MenuItem>
+                  <MenuItem value="python">Python</MenuItem>
+                  <MenuItem value="php">PHP</MenuItem>
+                  <MenuItem value="typescript">TypeScript</MenuItem>
+                  <MenuItem value="java">Java</MenuItem>
+                  <MenuItem value="cpp">C++</MenuItem>
+                  <MenuItem value="c">C</MenuItem>
+                  <MenuItem value="ruby">Ruby</MenuItem>
+                  <MenuItem value="go">Go</MenuItem>
+                </Select>
+                {detectedLanguage && (
+                  <Typography variant="caption" style={{ marginTop: 4, display: 'inline-block', color: '#666' }}>
+                    Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
+                  </Typography>
+                )}
+                <Typography variant="caption" style={{ marginTop: 6, display: 'block', color: '#666', fontSize: '12px' }}>
+                  ⚠️ Language detection is heuristic and may be inaccurate for short code snippets. Manually select the correct language if needed.
+                </Typography>
+              </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

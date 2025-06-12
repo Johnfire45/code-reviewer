@@ -217,10 +217,13 @@ const CodeReviewer: React.FC = () => {
                   <MenuItem value="go">Go</MenuItem>
                 </Select>
                 {detectedLanguage && (
-                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+                  <Typography variant="caption" sx={{ mt: 0.5, display: 'inline-block', color: 'text.secondary' }}>
                     Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
                   </Typography>
                 )}
+                <Typography variant="caption" sx={{ mt: 0.75, display: 'block', color: 'text.secondary', fontSize: '12px' }}>
+                  ⚠️ Language detection is heuristic and may be inaccurate for short code snippets. Manually select the correct language if needed.
+                </Typography>
               </FormControl>
             </Grid>
             <Grid item xs={12}>
