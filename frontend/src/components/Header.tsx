@@ -2,12 +2,11 @@ import React from 'react';
 import type { NavigationItem, SectionId } from './types';
 
 interface HeaderProps {
-  isHeaderVisible: boolean;
   activeSection: SectionId;
   onSectionChange: (sectionId: SectionId) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isHeaderVisible, activeSection, onSectionChange }) => {
+const Header: React.FC<HeaderProps> = ({ activeSection, onSectionChange }) => {
   const navigationItems: NavigationItem[] = [
     { id: 'home', label: 'Home' },
     { id: 'analyzer', label: 'Analyzer' },
@@ -39,10 +38,7 @@ const Header: React.FC<HeaderProps> = ({ isHeaderVisible, activeSection, onSecti
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        transform: isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        opacity: isHeaderVisible ? 1 : 0,
-        pointerEvents: isHeaderVisible ? 'auto' : 'none'
+        // Always visible - no auto-hide behavior
       }}>
       {/* Brand */}
       <div style={{ flex: 1, textAlign: 'left' }}>

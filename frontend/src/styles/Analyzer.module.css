@@ -1,0 +1,385 @@
+/* Analyzer Component Styles */
+
+.analyzerContainer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  height: calc(100vh - 76px);
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 20px;
+  padding-top: 76px;
+  overflow-y: auto;
+  z-index: 2;
+}
+
+.contentWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: auto;
+  will-change: opacity;
+}
+
+.mainCard {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.mainCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+}
+
+.layoutContainer {
+  display: flex;
+  gap: 30px;
+  align-items: stretch;
+  min-height: 480px;
+}
+
+.leftSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rightSection {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+}
+
+.dragDropBox {
+  border: 3px dashed #e1e5e9;
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  cursor: default;
+  position: relative;
+  overflow: visible;
+  height: 100%;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.dragDropBox:hover {
+  border-color: #667eea;
+  background: linear-gradient(45deg, #f8fafc, #e6f3ff);
+  transform: scale(1.01);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+}
+
+.codeInputSection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.codeInputSection:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+  transform: scale(1.01);
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.dragDropIcon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  animation: bounce 2s ease infinite;
+}
+
+.dragDropTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 10px 0;
+}
+
+.dragDropSubtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0 0 25px 0;
+}
+
+.chooseFileButton {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 18px 40px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  margin-bottom: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  position: relative;
+}
+
+.chooseFileButton:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+}
+
+.fileTypeBadges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 350px;
+}
+
+.fileTypeBadge {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.fileTypeBadge:hover {
+  transform: translateY(-1px) scale(1.05);
+}
+
+.codeTextarea {
+  width: 100%;
+  flex: 1;
+  min-height: 300px;
+  padding: 25px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 15px;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  color: #222;
+  font-weight: 500;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #f1f1f1;
+}
+
+.codeTextarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.codeTextarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.codeTextarea::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 4px;
+}
+
+.codeTextarea::-webkit-scrollbar-thumb:hover {
+  background: #5a67d8;
+}
+
+.codeTextarea:focus {
+  border-color: #667eea;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+  transform: scale(1.01);
+}
+
+.languageSelector {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.languageLabel {
+  font-weight: 600;
+  font-size: 16px;
+  color: #2d3748;
+}
+
+.languageSelect {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  font-size: 16px;
+  background: white;
+  color: #2d3748;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.languageSelect:focus {
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  outline: none;
+}
+
+.detectedLanguage {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.analyzeButtonContainer {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.analyzeButton {
+  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+  background-size: 200% 200%;
+  animation: buttonGradient 3s ease infinite;
+  color: white;
+  border: none;
+  padding: 20px 50px;
+  border-radius: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto;
+  transform: translateY(0);
+}
+
+.analyzeButton:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 50px rgba(102, 126, 234, 0.5);
+}
+
+.analyzeButton:disabled {
+  background: linear-gradient(45deg, #a0aec0, #718096);
+  animation: none;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .layoutContainer {
+    flex-direction: column;
+    gap: 25px;
+    min-height: auto;
+  }
+  
+  .leftSection,
+  .rightSection {
+    flex: 1;
+    min-width: 100%;
+  }
+  
+  .dragDropBox {
+    min-height: 300px;
+  }
+  
+  .mainCard {
+    padding: 25px;
+  }
+  
+  .analyzerContainer {
+    padding: 15px;
+    padding-top: 76px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dragDropTitle {
+    font-size: 20px;
+  }
+  
+  .dragDropIcon {
+    font-size: 50px;
+  }
+  
+  .chooseFileButton {
+    padding: 15px 30px;
+    font-size: 16px;
+  }
+  
+  .sectionTitle {
+    font-size: 18px;
+  }
+  
+  .analyzeButton {
+    padding: 18px 40px;
+    font-size: 18px;
+  }
+}
+
+/* Animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes buttonGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 
