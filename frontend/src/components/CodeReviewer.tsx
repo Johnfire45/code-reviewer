@@ -30,6 +30,7 @@ import {
 import { useDropzone } from 'react-dropzone';
 import CodeDisplay from './CodeDisplay';
 import AnalysisResults from './AnalysisResults';
+import { detectLanguageFromContent, detectLanguageFromFileName } from '../utils/languageDetector';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -61,6 +62,7 @@ const CodeReviewer: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [error, setError] = useState('');
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -74,24 +76,11 @@ const CodeReviewer: React.FC = () => {
         reader.onload = (e) => {
           const content = e.target?.result as string;
           setCode(content);
-          // Auto-detect language from file extension
-          const extension = file.name.split('.').pop()?.toLowerCase();
-          const languageMap: { [key: string]: string } = {
-            'js': 'javascript',
-            'jsx': 'javascript',
-            'ts': 'typescript',
-            'tsx': 'typescript',
-            'py': 'python',
-            'java': 'java',
-            'cpp': 'cpp',
-            'c': 'c',
-            'php': 'php',
-            'rb': 'ruby',
-            'go': 'go',
-          };
-          if (extension && languageMap[extension]) {
-            setLanguage(languageMap[extension]);
-          }
+          
+          // Detect language from file extension
+          const detectedLang = detectLanguageFromFileName(file.name);
+          setLanguage(detectedLang);
+          setDetectedLanguage(detectedLang);
         };
         reader.readAsText(file);
       }
@@ -100,6 +89,21 @@ const CodeReviewer: React.FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newCode = e.target.value;
+    setCode(newCode);
+    
+    // Only detect language if we have enough code to analyze (at least 20 chars)
+    if (newCode && newCode.trim().length > 20) {
+      const detectedLang = detectLanguageFromContent(newCode);
+      setDetectedLanguage(detectedLang);
+      // Auto-select the detected language if it's different
+      if (detectedLang !== language) {
+        setLanguage(detectedLang);
+      }
+    }
   };
 
   const handleAnalyze = async () => {
@@ -123,7 +127,28 @@ const CodeReviewer: React.FC = () => {
         throw new Error(data.error || 'Failed to analyze code');
       }
       const data = await response.json();
-      setAnalysisResults(data);
+      
+      // Transform API response to match expected frontend format
+      const transformedData = {
+        summary: {
+          totalIssues: data.summary.totalIssues,
+          critical: data.summary.criticalIssues,
+          high: data.summary.highIssues,
+          medium: data.summary.mediumIssues,
+          low: data.summary.lowIssues
+        },
+        issues: data.vulnerabilities.map((vuln: any, index: number) => ({
+          id: index + 1,
+          severity: vuln.severity,
+          type: vuln.name || vuln.id,
+          line: vuln.locations?.[0]?.line || 0,
+          description: vuln.description,
+          recommendation: vuln.recommendation,
+          code: vuln.locations?.[0]?.snippet || ''
+        }))
+      };
+      
+      setAnalysisResults(transformedData);
     } catch (err: any) {
       setError(err.message || 'Failed to analyze code. Please try again.');
     } finally {
@@ -191,6 +216,11 @@ const CodeReviewer: React.FC = () => {
                   <MenuItem value="ruby">Ruby</MenuItem>
                   <MenuItem value="go">Go</MenuItem>
                 </Select>
+                {detectedLanguage && (
+                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary' }}>
+                    Detected: {detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12}>
@@ -201,7 +231,7 @@ const CodeReviewer: React.FC = () => {
                 variant="outlined"
                 label="Paste your code here"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={handleCodeChange}
                 sx={{
                   '& .MuiInputBase-input': {
                     fontFamily: 'monospace',
